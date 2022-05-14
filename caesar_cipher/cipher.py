@@ -1,6 +1,8 @@
+from email import message
 import random
 import re 
 from caesar_cipher.is_english_word import count_words
+from caesar_cipher.corpus_loader import word_list
 
 letters ='abcdefghijklmnopqrstuvwxyz'
 upper_letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -30,23 +32,21 @@ def decrypt(text, key):
 
 #take encrypted  message and return it to original state without the key 
 def crack(text): 
-    percentage = 0
-    iterations = []
-    pattern = '[^a-zA-Z]' 
-    text = re.sub(pattern, "", text)
-    num = 26 
-    while num > 0: 
+    pattern = r'[^a-zA-Z]+' 
+    #length of alphabet 
+    for num in range(1, 26): 
         current_str = decrypt(text, num)
-        iterations.append(current_str)
-        num -= 1 
-    #check strings in iterations for english-ness 
-    for string in iterations: 
-        string = re.sub(pattern, "", string)
-        word_count = count_words(string)
-        percentage = int(word_count / len(string.split()) * 100)
-        if percentage > 50:
-            return string
-    
+        current_words = current_str.split()
+        english_words = 0
+        for word in current_words: 
+            #regex that grabs only the letters 
+            current_word = re.sub(pattern, "", word)
+            #word list from corpus
+            if current_word.lower() in word_list: 
+                english_words += 1 
+        if english_words // len(current_words) >= .5:
+            return current_str
+    return ""
 
 
 if __name__ == "__main__":
